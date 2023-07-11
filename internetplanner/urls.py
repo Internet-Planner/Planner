@@ -24,7 +24,8 @@ from internetplanner.api import views
 router = DefaultRouter()
 router.register(r'food', views.FoodViewSet) 
 router.register(r'events', views.EventsViewSet) 
-router.register(r'video', views.VideoViewSet) 
+router.register(r'videos', views.VideoViewSet) 
+router.register(r'planning', views.PlanningViewSet) 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
