@@ -20,12 +20,11 @@ from rest_framework.routers import DefaultRouter
 
 from internetplanner.api import views
 
-
 router = DefaultRouter()
-router.register(r'food', views.FoodViewSet) 
 router.register(r'events', views.EventsViewSet) 
 router.register(r'videos', views.VideoViewSet) 
-router.register(r'planning', views.PlanningViewSet) 
+router.register(r'plannings', views.PlanningViewSet) 
+router.register(r'users', views.UserViewSet) 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
