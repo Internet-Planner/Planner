@@ -1,9 +1,6 @@
 from django.db import models
 
-# Create your models here.
-class Food(models.Model):
-    name = models.CharField(max_length=200)
-    description = models.CharField(max_length=500)
+# Create your models here
 
 class Events(models.Model):
     live = models.CharField(max_length=30)
@@ -13,7 +10,7 @@ class Events(models.Model):
 
 class Video(models.Model):
    # id_events = models.ForeignKey("Events", on_delete=models.CASCADE,)
-    link = models.CharField(max_length=200)
+    link = models.URLField(max_length=200)
     description = models.CharField(max_length=500)
 
 

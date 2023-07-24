@@ -2,12 +2,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import Food, Events, Video, Planning
-from .serializer import FoodSerializer, EventsSerializer, VideoSerializer, PlanningSerializer
- 
-class FoodViewSet(viewsets.ModelViewSet):
-    queryset = Food.objects.all().order_by('name')
-    serializer_class = FoodSerializer
+from .models import Events, Video, Planning
+from .serializer import EventsSerializer, VideoSerializer, PlanningSerializer
 
 class EventsViewSet(viewsets.ModelViewSet):
     queryset = Events.objects.all().order_by('title')

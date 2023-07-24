@@ -49,5 +49,7 @@ docker compose exec web python manage.py migrate
 docker compose exec web pip install django-seed
 docker compose exec web pip install psycopg2
 docker compose exec web python manage.py seed
+docker compose exec web python manage.py seed api --number=15
 docker compose exec web python3 manage.py seed api --number=15 --seeder "Video.link" "https://www.youtube.com/watch?v=P1UqJBNQ1EI"
+docker compose exec web python3 internetplanner/api/seed.py
 ```

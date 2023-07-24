@@ -21,14 +21,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Food',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.CharField(max_length=500)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Planning',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -40,7 +32,7 @@ class Migration(migrations.Migration):
             name='Video',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('link', models.CharField(max_length=200)),
+                ('link', models.URLField(max_length=200)),
                 ('description', models.CharField(max_length=500)),
             ],
         ),
