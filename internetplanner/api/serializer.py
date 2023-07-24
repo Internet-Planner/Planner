@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Food, Events, Video, Planning
- 
+
 class FoodSerializer(serializers.ModelSerializer):
     class Meta:
         model=Food
@@ -12,7 +12,7 @@ class EventsSerializer(serializers.ModelSerializer):
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Video
-        fields=('link','description')
+        fields=('id','link','description')
 
 class PlanningSerializer(serializers.ModelSerializer):
     class Meta:

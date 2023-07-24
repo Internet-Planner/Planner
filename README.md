@@ -25,7 +25,7 @@ python manage.py runserver
 
 ## Gestion de la DB
 
-Si tu viens de télécharger le projet
+### Si tu viens de télécharger le projet
 
 ```bash
 # Création des tables dans la db
@@ -34,11 +34,18 @@ docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
 ```
 
-Mettre à jour le projet
+### Mettre à jour le projet
 
 ```bash
 # Appliquer un changement d'un model de données
 docker compose exec web python manage.py makemigrations
 # Migrer le changement de model de données
 docker compose exec web python manage.py migrate
+```
+
+### Seed the database
+
+```bash
+docker compose exec web python manage.py seed
+docker compose exec web python3 manage.py seed api --number=15 --seeder "Video.link" "https://www.youtube.com/watch?v=P1UqJBNQ1EI"
 ```
