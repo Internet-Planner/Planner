@@ -12,7 +12,7 @@ class User(AbstractUser):
         SUBSCRIBER = 'SUB', 'subscriber'
         USER = 'USR', 'user'
        
-    base_role = Role.ADMIN
+    base_role = Role.USER
     
     role = models.CharField(max_length=50, choices=Role.choices, default=base_role)
     created_at = models.DateTimeField(default=timezone.now)
