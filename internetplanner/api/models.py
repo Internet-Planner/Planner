@@ -28,7 +28,7 @@ class Events(models.Model):
     title = models.CharField(max_length=30)
     duration = models.DateField()
     isLive = models.BooleanField(default=False)
-    reccurence = []
+    reccurence = models.CharField(max_length=30, default=['once', 'daily', 'weekly', 'monthly', 'yearly'])
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True)
 
