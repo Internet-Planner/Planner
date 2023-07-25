@@ -4,16 +4,17 @@ from .models import Events, Video, Planning, User
 class EventsSerializer(serializers.ModelSerializer):
     class Meta:
         model=Events
-        fields=('isLive','title', 'duration', 'reucrrence', 'created_at', 'updated_at')
+        fields=('id', 'isLive','title', 'duration', 'reccurence', 'created_at', 'updated_at')
+
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model=Video
-        fields=('link','description','thumbnail', 'created_at', 'updated_at')
+        fields=('id', 'link','description','thumbnail', 'created_at', 'updated_at')
 
 class PlanningSerializer(serializers.ModelSerializer):
     class Meta:
         model=Planning
-        fields=('name','description', 'created_at', 'updated_at')
+        fields=('id', 'name','description', 'created_at', 'updated_at')
         
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
