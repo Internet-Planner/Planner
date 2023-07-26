@@ -25,7 +25,7 @@ python manage.py runserver
 
 ## Gestion de la DB
 
-### Si tu viens de télécharger le projet
+### Initialiser la DB 
 
 ```bash
 # Création des tables dans la db
@@ -34,7 +34,7 @@ docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
 ```
 
-### Mettre à jour le projet
+### Mettre à jour la DB 
 
 ```bash
 # Appliquer un changement d'un model de données
@@ -46,10 +46,13 @@ docker compose exec web python manage.py migrate
 ### Seed the database
 
 ```bash
-docker compose exec web pip install django-seed
-docker compose exec web pip install psycopg2
-docker compose exec web python manage.py seed
+# Permet de créer 15 lignes dans chaque table
+# "Video.link" sera rempli avec des liens aléatoire  
 docker compose exec web python manage.py seed api --number=15
+
+# Permet de créer 15 lignes dans chaque table avec un link donné pour le model vidéo 
 docker compose exec web python3 manage.py seed api --number=15 --seeder "Video.link" "https://www.youtube.com/watch?v=P1UqJBNQ1EI"
-docker compose exec web python3 internetplanner/api/seed.py
+
 ```
+<!-- marche pas car on a pas encore implémenté le code qui va avec -->
+<!-- docker compose exec web python3 internetplanner/api/seed.py -->
