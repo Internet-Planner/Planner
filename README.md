@@ -13,34 +13,22 @@ sudo docker compose build
 sudo docker compose up -d
 ```
 
-**Ou** avec un environnement virtuel:
-
-```bash
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
-
-## Gestion de la DB
-
-### Initialiser la DB 
+### Initialiser la DB
 
 ```bash
 # Création des tables dans la db
-docker compose exec web python manage.py migrate
+docker compose exec python python manage.py migrate
 # Création d'un super user
-docker compose exec web python manage.py createsuperuser
+docker compose exec python python manage.py createsuperuser
 ```
 
 ### Mettre à jour la DB 
 
 ```bash
 # Appliquer un changement d'un model de données
-docker compose exec web python manage.py makemigrations
+docker compose exec python python manage.py makemigrations
 # Migrer le changement de model de données
-docker compose exec web python manage.py migrate
+docker compose exec python python manage.py migrate
 ```
 
 ### Seed the database
