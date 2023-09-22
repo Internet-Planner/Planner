@@ -13,7 +13,7 @@ sudo docker compose build
 sudo docker compose up -d
 ```
 
-### Initialiser la DB
+### Initialiser la DB 
 
 ```bash
 # Création des tables dans la db
