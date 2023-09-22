@@ -17,18 +17,18 @@ sudo docker compose up -d
 
 ```bash
 # Création des tables dans la db
-docker compose exec web python manage.py migrate
+docker compose exec backend python manage.py migrate
 # Création d'un super user
-docker compose exec web python manage.py createsuperuser
+docker compose exec backend python manage.py createsuperuser
 ```
 
 ### Mettre à jour la DB 
 
 ```bash
 # Appliquer un changement d'un model de données
-docker compose exec web python manage.py makemigrations
+docker compose exec backend python manage.py makemigrations
 # Migrer le changement de model de données
-docker compose exec web python manage.py migrate
+docker compose exec backend python manage.py migrate
 ```
 
 ### Seed the database
