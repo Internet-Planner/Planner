@@ -9,17 +9,18 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+from celery.schedules import timedelta
+
+load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-y1803hj74nq*pe#-f(y945rftyz$6nf5$m)#1#b-rrxco3syj-'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -78,12 +79,26 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'planner_ddb',
-        'USER': 'admin',
-        'PASSWORD': 'password',
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'db',
         'PORT': '3306'
     }
+}
+
+# Configuration Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL'); # URL de connexion au broker Redis
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') # URL de connexion pour les résultats des tâches Celery
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Configuration pour planifier les tâches avec Celery Beat (optionnel)
+CELERY_BEAT_SCHEDULE = {
+    'clean-expired-tokens': {
+        'task': 'backend.tasks.task.clean_expired_tokens_task',
+        # 'schedule': schedules.crontab(minute=0),  # Exécutez la tâche au début de chaque heure
+        'schedule': timedelta(seconds=10),  # Exécutez la tâche toute les 10 secondes
+    },
 }
 
 # Password validation
@@ -107,11 +122,25 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Whitelist localhost:3000 (React port) for CORS
 # CORS_ALLOW_ALL_ORIGINS = False  # Désactivez l'autorisation de toutes les origines.
-CORS_ALLOW_CREDENTIALS = True   # Autorisez les requêtes avec des credentials (cookies, authentification, etc.).
+CORS_ALLOW_CREDENTIALS = True # Autorisez les requêtes avec des credentials (cookies, authentification, etc.).
 
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.permissions.AllowAny',
+#     ],
+# }
+
+
+ # Ajoutez ici les origines que vous souhaitez autoriser
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Ajoutez ici les origines que vous souhaitez autoriser.
+    "http://localhost:3000",
+    "http://172.22.0.2:3000"
 ]
+
+# Par défaut, APPEND_SLASH est défini sur True, ce qui signifie que Django ajoutera
+# automatiquement une barre oblique à la fin des URL qui n'en ont pas lors de la redirection.
+# Cela est fait pour maintenir la cohérence et la compatibilité avec les pratiques web courantes.
+APPEND_SLASH = False
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

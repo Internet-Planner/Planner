@@ -13,10 +13,12 @@ class User(AbstractUser):
         USER = 'USR', 'user'
        
     base_role = Role.USER
-    
+
     role = models.CharField(max_length=50, choices=Role.choices, default=base_role)
+    nick_name = models.CharField(max_length=50, null=True, unique=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True)
+    last_login = models.DateTimeField(null=True)
     
     def save(self, *args, **kwargs):
         if not self.pk and not self.role:
@@ -24,7 +26,7 @@ class User(AbstractUser):
         return super().save(*args, **kwargs)
     
 #class Events
-class Events(models.Model):
+class Event(models.Model):
     title = models.CharField(max_length=30)
     duration = models.DateField()
     isLive = models.BooleanField(default=False)
@@ -34,7 +36,7 @@ class Events(models.Model):
 
 #class Video
 class Video(models.Model):
-   # id_events = models.ForeignKey("Events", on_delete=models.CASCADE,)
+   # id_event = models.ForeignKey("Event", on_delete=models.CASCADE)
     link = models.URLField(max_length=200)
     description = models.CharField(max_length=500)
     thumbnail = models.CharField(max_length=200)
@@ -48,3 +50,5 @@ class Planning(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True)
 
+class RevokedToken(models.Model):
+    token = models.CharField(max_length=255, unique=True)
