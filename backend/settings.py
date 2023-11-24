@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-from celery.schedules import timedelta
-
 load_dotenv('.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -87,19 +85,6 @@ DATABASES = {
     }
 }
 
-# Configuration Celery
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL'); # URL de connexion au broker Redis
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND') # URL de connexion pour les résultats des tâches Celery
-CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-
-# Configuration pour planifier les tâches avec Celery Beat (optionnel)
-CELERY_BEAT_SCHEDULE = {
-    'clean-expired-tokens': {
-        'task': 'backend.tasks.task.clean_expired_tokens_task',
-        # 'schedule': schedules.crontab(minute=0),  # Exécutez la tâche au début de chaque heure
-        'schedule': timedelta(seconds=10),  # Exécutez la tâche toute les 10 secondes
-    },
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
