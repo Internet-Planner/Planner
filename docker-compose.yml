@@ -8,8 +8,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./:/app
-    command: /bin/bash -c "/entrypoint.sh"
+      - .:/app
 
   db:
     image: mysql:latest
