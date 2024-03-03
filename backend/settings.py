@@ -111,13 +111,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Whitelist localhost:3000 (React port) for CORS
 # CORS_ALLOW_ALL_ORIGINS = False  # Désactivez l'autorisation de toutes les origines.
-# CORS_ALLOW_CREDENTIALS = True  # Autorisez les requêtes avec des credentials (cookies, authentification, etc.).
+CORS_ALLOW_CREDENTIALS = True  # Autorisez les requêtes avec des credentials (cookies, authentification, etc.).
 
 # Les origines autoriser
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://172.22.0.2:3000"
-# ]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://172.22.0.2:3000"
+]
 
 # CSRF_TRUSTED_ORIGINS = [
 #     "http://localhost:3000",
