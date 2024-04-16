@@ -1,113 +1,194 @@
-# import jwt, datetime
-# from rest_framework import viewsets, status
-# from rest_framework.views import APIView
-# from rest_framework.response import Response
-# from rest_framework.exceptions import AuthenticationFailed
-# from django.contrib.auth import login
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import MyTokenObtainPairSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import UserRegistrationSerializer, PasswordResetSerializer
+from .models import Planning
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth import get_user_model
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
+from backend.api.utils.token import account_activation_token
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.html import strip_tags
+from django.conf import settings
+from django.core.mail import send_mail
+from backend.api.models import User
 
-# from .models import User, Event, Video, Planning, RevokedToken
-# from .serializer import UserSerializer, EventSerializer, VideoSerializer, PlanningSerializer
 
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
 
-# class EventViewSet(viewsets.ModelViewSet):
-#     queryset = Event.objects.all().order_by('id')
-#     serializer_class = EventSerializer
+    def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        password = request.data.get('password')
 
-# class VideoViewSet(viewsets.ModelViewSet):
-#     queryset = Video.objects.all().order_by('id')
-#     serializer_class = VideoSerializer
+        # Vérifie si l'utilisateur existe
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"message": 4098}, status=status.HTTP_400_BAD_REQUEST)
 
-# class PlanningViewSet(viewsets.ModelViewSet):
-#     queryset = Planning.objects.all().order_by('id')
-#     serializer_class = PlanningSerializer
+        # Vérifie si le mot de passe est correct
+        if not user.check_password(password):
+            return Response({"message": 4098}, status=status.HTTP_400_BAD_REQUEST)
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all().order_by('id')
-#     serializer_class = UserSerializer
+        # Vérifie si l'utilisateur est actif
+        if not user.is_active:
+            return Response({"message": 4406}, status=status.HTTP_403_FORBIDDEN)
 
-# # ***************************************************************************************************
-# class RegisterView(APIView):
-#     def post(self, request):
-#        serializer = UserSerializer(data=request.data)
-#        serializer.is_valid(raise_exception=True)
-#        serializer.save()
-       
-#        return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-
-# class LoginView(APIView):
-#     def post(self, request):
-#         email = request.data['email']
-#         password = request.data['password'] 
-#         user = User.objects.filter(email=email).first() 
-
-#         if user is None:
-#             raise AuthenticationFailed('Invalid email or password!')
+        # Si tout est OK on génère le token
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token_data = serializer.validated_data
+        return Response(token_data, status=status.HTTP_200_OK)
         
-#         if not user.check_password(password):
-#             raise AuthenticationFailed('Invalid email or password!')
 
-#         login(request, user)  # Authentifie l'utilisateur dans la session
 
-#         # Création du jwt (JSON Web Token) payload = info du token
-#         payload = { 
-#             'id': user.id, # ID de l'utilisateur
-#             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60), # temps d'expiration du token (60 minutes)
-#             'iat': datetime.datetime.utcnow() # date de création du token
-#         }
+@api_view(["GET"])
+def getRoutes(request):
+    routes = [
+        "/api/token",
+        "/api/token/refresh",
+    ]
+    return Response(routes)
+
+
+@api_view(["POST"])
+def activate(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+
+        return Response(
+            {"message": "Account activated successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+    else:
+        return Response(
+            {"message": "Activation link is invalid"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+def activateEmail(request, user, to_email):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = account_activation_token.make_token(user)
+
+    subject = "Activate your Planner account"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = user.email
+
+    html_content = render_to_string(
+        "account_activation_email.html",
+        {
+            "user": user,
+            "activation_link": f"http://{settings.DOMAIN}/activate/{uid}/{token}",
+            "protocol": "https" if request.is_secure() else "http",
+        },
+    )
+
+    # Extraire le texte brut de l'e-mail
+    text_content = strip_tags(html_content)
+
+    # Envoyer l'e-mail
+    send_result = send_mail(
+        subject, text_content, from_email, [to_email], html_message=html_content
+    )
+
+    if send_result:
+        return Response(
+            {"message": "Email sent successfully"}, status=status.HTTP_200_OK
+        )
+    else:
+        return Response(
+            {"message": "Failed to send email"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@api_view(["POST"])
+def forgotPassword(request):
+    email = request.data.get('email')
+    User = get_user_model()
+
+    try:
+        user = User.objects.get(email=email)
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+
+        subject = "Password Reset Request"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = user.email
+
+        html_content = render_to_string(
+            "password_reset_email.html",
+            {
+                "user": user,
+                "reset_password_link": f"http://{settings.DOMAIN}/reset-password/{uid}/{token}",
+                "protocol": "https" if request.is_secure() else "http",
+            },
+        )
+
+        text_content = strip_tags(html_content)
         
-#         token = jwt.encode(payload, 'secret', algorithm='HS256') # encodage du token avec l'algorithme HS256
-        
-#         user = User.objects.filter(id=payload['id']).first() # récupération de l'utilisateur à partir de l'ID du token
-
-#         userData = {
-#             'id': user.id,
-#             'nick_name': user.nick_name,
-#             'first_name': user.first_name,
-#             'last_name': user.last_name,
-#         }
-
-#         response = Response() 
-#         response.set_cookie(key='jwt', value=token, httponly=True) # envoi du token dans un cookie, httponly=True pour empêcher l'accès au cookie depuis le JavaScript
-#         response.data = userData # envoi du user dans la réponse JSON
-
-#         return response
-
-# class UserView(APIView):
-#     def get(self, request):
-#         token = request.COOKIES.get('jwt') # récupération du token dans le cookie
-
-#         if not token:
-#             # raise AuthenticationFailed('Unauthenticated!')
-#             raise AuthenticationFailed('No jwt token!')
-        
-#         # décodage du token avec l'algorithme HS256
-#         try:
-#             payload = jwt.decode(token, 'secret', algorithms=['HS256']) 
-#         except jwt.ExpiredSignatureError:
-#             # raise AuthenticationFailed('Unauthenticated!')
-#             raise AuthenticationFailed('Expired jwt token!')
-        
-#         user_id = payload.get('id') 
-#         if not user_id: 
-#             raise AuthenticationFailed('Invalid jwt token!')
-        
-#         user = User.objects.filter(id=payload['id']).first() # récupération de l'utilisateur à partir de l'ID du token
-#         serializer = UserSerializer(user) 
+        # Envoie l'e-mail
+        send_mail(subject, text_content, from_email, [to_email], html_message=html_content, fail_silently=True)
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
-#         return Response(serializer.data) # renvoi des données de l'utilisateur dans la réponse JSON
+    except User.DoesNotExist:
+        # Si l'utilisateur n'existe pas, retourne quand même un statut 200
+        return Response(status=status.HTTP_204_NO_CONTENT)
+   
+
+@api_view(["POST"])
+def resetPassword(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+
+    if user is not None:
+        # Vérifier si le token est valide
+        if default_token_generator.check_token(user, token):
+
+            serializer = PasswordResetSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=user)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class LogoutView(APIView):
-#     def post(self, request):
-#         token = request.COOKIES.get('jwt') # récupération du token dans le cookie
-#         if token:
-#             RevokedToken.objects.create(token=token)  # Ajoutez le token à la liste des tokens révoqués en BDD
-#         response = Response()
-#         response.delete_cookie('jwt') # Supprimez le'jwt' des cookies 
-#         response.data = {
-#             'message': 'logout success'
-#         }
 
-#         return response
-    
-    
+@api_view(["POST"])
+def register(request):
+    serializer = UserRegistrationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+
+        # Créer automatiquement un planning pour l'utilisateur nouvellement créé
+        Planning.objects.create(user=user)
+
+        # Envoyer l'e-mail d'activation
+        activateEmail(request, user, user.email)
+
+        return Response(
+            {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
+        )
+    return Response({"message": "Failed to register"}, status=status.HTTP_400_BAD_REQUEST)
