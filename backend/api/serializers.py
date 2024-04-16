@@ -1,57 +1,61 @@
-from django.contrib.auth import get_user_model
-from djoser.serializers import UserCreateSerializer
+from rest_framework import serializers
+from backend.api.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-User = get_user_model()
 
-class CreateUserSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Ajout personnalisés au token
+        token['username'] = user.username
+        token['first_name'] = user.first_name
+        token['last_name'] = user.last_name
+        token['is_active'] = user.is_active
+        token['avatar'] = user.avatar_url()
+
+        return token
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    confirm_password = serializers.CharField(write_only=True)
+
+    class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'password', 'role')
+        fields = ['username', 'email', 'password', 'confirm_password']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
 
-# class EventSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=Event
-#         fields=('id', 'isLive','title', 'duration', 'reccurence', 'created_at', 'updated_at')
-#         read_only_fields = ('created_at', 'updated_at')
+    def validate(self, data):
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError("Password fields does not match")
+        return data
 
-# class VideoSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=Video
-#         fields=('id', 'link','description','thumbnail', 'created_at', 'updated_at')
-#         read_only_fields = ('created_at', 'updated_at')
-
-# class PlanningSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model=Planning
-#         fields=('id', 'name','description', 'created_at', 'updated_at')
-#         read_only_fields = ('created_at', 'updated_at')
+    def create(self, validated_data):
+        email = validated_data['email'].lower()  # Convertir l'email en minuscules
         
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ('id', 'email', 'password', 'role', 'nick_name', 'created_at', 'updated_at')
-#         read_only_fields = ('created_at', 'updated_at')
-#         extra_kwargs = {'password': {'write_only': True}} # Le champ 'password' ne sera pas renvoyé dans les réponses JSON (write_only=True)
+        user = User.objects.create_user(
+            username = validated_data['username'],
+            email = email,
+            password = validated_data['password']
+        )
         
-#     # Créer un nouvel utilisateur à partir des données validées
-#     def create(self, validated_data):
-#         password = validated_data.pop('password', None) # Extrait 'password' des données validées
-#         email = validated_data.pop('email', None) # Extrait 'email' des données validées
-#         instance = self.Meta.model(**validated_data) # Création d'une nouvelle instance du modèle User avec les données validées
-        
-# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-# # # LE CHAMPS username EST OBLIGATOIRE AVEC DJANGO 
-# # ON L'IMPLEMENTERA AVEC L'EMAIL DONC LE "email" SERA AUSSI ENREGISTRE DANS "username" 
-# # MAIS ON UTILISERA "email" POUR L'IDENTIFICATION DONC UN EMAIL
-# # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!IMPORTANT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-#         if email is not None:
-#             instance.email = email
-#             instance.username = email
-#         if password is not None:
-#             instance.set_password(password)
+        return user
 
-#         instance.save()
-#         return instance
+class PasswordResetSerializer(serializers.Serializer):
+    new_password = serializers.CharField(max_length=128)
+    confirm_new_password = serializers.CharField(max_length=128)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_new_password']:
+            raise serializers.ValidationError("New password and confirm password do not match")
+        return data
     
-    
+    def save(self, user):
+        new_password = self.validated_data['new_password']
+        user.set_password(new_password)
+        user.save()
+
 

@@ -1,27 +1,22 @@
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import User
-
-# Register your models here.
-# admin.site.register(Event)
-# admin.site.register(Video)
-# admin.site.register(Planning)
+from .models import User, Planning, Event, Content
 
 
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(admin.ModelAdmin):
     ordering = ["email"]
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
     model = User
     list_display = [
         "email",
         "first_name",
         "last_name",
-        "nick_name",
         "role",
         "is_staff",
         "is_active",
+        "is_verified",
+        "is_certified",
     ]
     list_display_links = ["email"]
     list_filter = [
@@ -29,7 +24,7 @@ class UserAdmin(BaseUserAdmin):
         "is_staff",
         "is_active",
     ]
-    search_fields = ["email", "first_name", "last_name", "nick_name"]
+    search_fields = ["email", "first_name", "last_name", "username"]
     fieldsets = (
         (
             "Login Credentials",
@@ -44,6 +39,7 @@ class UserAdmin(BaseUserAdmin):
             "Personal Information",
             {
                 "fields": (
+                    "username",
                     "first_name",
                     "last_name",
                 )
@@ -58,12 +54,14 @@ class UserAdmin(BaseUserAdmin):
                     "is_superuser",
                     "groups",
                     "user_permissions",
+                    "is_verified",
+                    "role",
                 )
             },
         ),
         (
             "Important Dates",
-            {"fields": ("created_at", "last_login")},
+            {"fields": ("date_joined", "last_login")},
         ),
     )
     add_fieldsets = (
@@ -79,11 +77,73 @@ class UserAdmin(BaseUserAdmin):
                     "password2",
                     "role",
                     "is_staff",
-                    "is_active",
                 ),
             },
         ),
     )
 
 
+class PlanningAdmin(admin.ModelAdmin):
+    ordering = ["created_at"]
+    model = Planning
+    list_display = [
+        "user",
+        "created_at",
+        "updated_at",
+        "is_supprime",
+    ]
+    list_filter = [
+        "user",
+    ]
+    search_fields = ["user"]
+
+    def has_add_permission(self, request):
+        return False  # Empêcher l'ajout manuel d'un planning
+
+class ContentInline(admin.StackedInline):
+    model = Content
+    min_num = 0  # Nombre minimum de formulaires requis, 0 signifie aucun formulaire requis
+    extra = 1  # Nombre de formulaires vides à afficher
+    can_delete = True  # Permettre la suppression des instances existantes de Content
+
+class EventAdmin(admin.ModelAdmin):
+    ordering = ["created_at"]
+    model = Event
+    list_display = [
+        "recurrence",
+        "title",
+        "description",
+        "date_start",
+        "date_end",
+        "created_at",
+        "updated_at",
+        "is_supprime",
+    ]
+    fieldsets = (
+        (
+            "Planning",
+            {
+                "fields": (
+                    "planning",
+                )
+            },
+        ),
+        (
+            "Event Information",
+            {
+                "fields": (
+                    "title",
+                    "description",
+                    "recurrence",
+                    "date_start",
+                    "date_end",
+                )
+            },
+        ),
+    )
+
+    inlines = [ContentInline]  # Ajoute le formulaire pour le modèle Content
+  
 admin.site.register(User, UserAdmin)
+admin.site.register(Planning, PlanningAdmin)
+admin.site.register(Event, EventAdmin)
