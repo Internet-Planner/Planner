@@ -40,17 +40,45 @@ class Planning(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='planning') # Clé étrangère vers le modèle User
 
 class Event(models.Model):
-    recurrence = models.CharField(max_length=255, blank=True, null=True)
+    is_single_event = models.BooleanField(null=True)
+    recurrence_rules = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=120, null=True)
+    description = models.CharField(max_length=500, null=True)
+    date_start = models.DateTimeField(null=False)
+    date_end = models.DateTimeField(null=True)
+    time_start = models.TimeField(null=True)
+    time_end = models.TimeField(null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True)
+    is_supprime = models.BooleanField(default=False) # Flag si true on garde quand même en base pour le gardé en temps que parent pour ne pas perdre la logique de recurrencepour ses instances enfants.
+
+    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name='event')
+    
+class Instance(models.Model):
+    recurrence_rules = models.CharField(max_length=255, blank=True, null=True)
     title = models.CharField(max_length=120)
     description = models.CharField(max_length=500)
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
+    time_start = models.TimeField()
+    time_end = models.TimeField()
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True)
     is_supprime = models.BooleanField(default=False)
 
-    planning = models.ForeignKey(Planning, on_delete=models.CASCADE, related_name='event')
-    
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='instance')
+
+# class Exception(models.Model):
+#     recurrence_rules = models.CharField(max_length=255, blank=True, null=True)
+#     title = models.CharField(max_length=120)
+#     description = models.CharField(max_length=500)
+#     date_start = models.DateTimeField()
+#     date_end = models.DateTimeField()
+#     created_at = models.DateTimeField(default=timezone.now)
+#     updated_at = models.DateTimeField(null=True)
+#     is_supprime = models.BooleanField(default=False)
+
+#     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='instance')
 
 class Content(models.Model):
     class contentType(models.TextChoices):
@@ -63,7 +91,7 @@ class Content(models.Model):
     link = models.URLField(max_length=200, null=True)
     content_type = models.CharField(max_length=2, choices=contentType.choices, default=contentType.YOUTUBE)
     is_live = models.BooleanField(default=False)
-    duration = models.DurationField(null=False)
+    duration = models.TimeField(null=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True)
     is_supprime = models.BooleanField(default=False)

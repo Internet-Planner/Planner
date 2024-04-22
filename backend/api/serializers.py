@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from backend.api.models import User
+from backend.api.models import User, Event
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
@@ -59,3 +59,18 @@ class PasswordResetSerializer(serializers.Serializer):
         user.save()
 
 
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'title', 'description', 'is_single_event', 'recurrence_rules', 'date_start', 'date_end', 'time_start', 'time_end', 'is_supprime']
+
+class CreateEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['title', 'description', 'is_single_event', 'recurrence_rules', 'date_start', 'date_end', 'time_start', 'time_end']
+
+    def create(self, validated_data):
+        user = self.context['user']
+        planning = user.planning
+        validated_data['planning'] = planning
+        return Event.objects.create(**validated_data)

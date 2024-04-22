@@ -21,14 +21,14 @@ services:
     ports:
       - "3306:3306"
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: ynF&7vhXMYz3&Uq*kQk&
-    ports:
-      - "8080:80"
-    depends_on:
-      - db
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: phpmyadmin
+  #   environment:
+  #     PMA_HOST: db
+  #     PMA_PORT: 3306
+  #     MYSQL_ROOT_PASSWORD: ynF&7vhXMYz3&Uq*kQk&
+  #   ports:
+  #     - "8080:80"
+  #   depends_on:
+  #     - db

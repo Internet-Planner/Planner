@@ -1,9 +1,9 @@
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import MyTokenObtainPairSerializer
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import UserRegistrationSerializer, PasswordResetSerializer
+from .serializers import UserRegistrationSerializer, PasswordResetSerializer, EventSerializer, CreateEventSerializer
 from .models import Planning
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
@@ -16,8 +16,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.core.mail import send_mail
-from backend.api.models import User
-
+from backend.api.models import User, Event
+from rest_framework.permissions import IsAuthenticated
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -192,3 +192,21 @@ def register(request):
             {"message": "User registered successfully"}, status=status.HTTP_201_CREATED
         )
     return Response({"message": "Failed to register"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def getEvents(request):
+    user = request.user
+    events = user.planning.event.filter(is_supprime=False)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def createEvent(request):
+    serializer = CreateEventSerializer(data=request.data, context={'user': request.user})
+    if serializer.is_valid():
+        serializer.save()  
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

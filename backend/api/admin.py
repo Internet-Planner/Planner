@@ -82,6 +82,11 @@ class UserAdmin(admin.ModelAdmin):
         ),
     )
 
+@receiver(post_save, sender=User)
+def create_user_planning(sender, instance, created, **kwargs):
+    if created:
+        Planning.objects.create(user=instance)
+
 
 class PlanningAdmin(admin.ModelAdmin):
     ordering = ["created_at"]
@@ -106,44 +111,42 @@ class ContentInline(admin.StackedInline):
     extra = 1  # Nombre de formulaires vides à afficher
     can_delete = True  # Permettre la suppression des instances existantes de Content
 
-class EventAdmin(admin.ModelAdmin):
-    ordering = ["created_at"]
-    model = Event
-    list_display = [
-        "recurrence",
-        "title",
-        "description",
-        "date_start",
-        "date_end",
-        "created_at",
-        "updated_at",
-        "is_supprime",
-    ]
-    fieldsets = (
-        (
-            "Planning",
-            {
-                "fields": (
-                    "planning",
-                )
-            },
-        ),
-        (
-            "Event Information",
-            {
-                "fields": (
-                    "title",
-                    "description",
-                    "recurrence",
-                    "date_start",
-                    "date_end",
-                )
-            },
-        ),
-    )
+# class EventAdmin(admin.ModelAdmin):
+#     ordering = ["created_at"]
+#     model = Event
+#     list_display = [
+#         "title",
+#         "description",
+#         "date_start",
+#         "date_end",
+#         "created_at",
+#         "updated_at",
+#         "is_supprime",
+#     ]
+#     fieldsets = (
+#         (
+#             "Planning",
+#             {
+#                 "fields": (
+#                     "planning",
+#                 )
+#             },
+#         ),
+#         (
+#             "Event Information",
+#             {
+#                 "fields": (
+#                     "title",
+#                     "description",
+#                     "date_start",
+#                     "date_end",
+#                 )
+#             },
+#         ),
+#     )
 
-    inlines = [ContentInline]  # Ajoute le formulaire pour le modèle Content
+#     inlines = [ContentInline]  # Ajoute le formulaire pour le modèle Content
   
 admin.site.register(User, UserAdmin)
 admin.site.register(Planning, PlanningAdmin)
-admin.site.register(Event, EventAdmin)
+admin.site.register(Event)
