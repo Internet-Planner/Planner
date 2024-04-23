@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "backend.api",
     "rest_framework",
     "rest_framework_simplejwt",
@@ -62,7 +61,7 @@ ROOT_URLCONF = "backend.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -111,20 +110,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Whitelist localhost:3000 (React port) for CORS
-# CORS_ALLOW_ALL_ORIGINS = False  # Désactivez l'autorisation de toutes les origines.
+# Whitelist for CORS
+# CORS_ALLOW_ALL_ORIGINS = False  # autorisation de toutes les origines.
 CORS_ALLOW_CREDENTIALS = True  # Autorisez les requêtes avec des credentials (cookies, authentification, etc.).
+
+
+ALLOWED_HOSTS = ['localhost', '192.168.1.184', '127.0.0.1', '[::1]']
 
 # Les origines autoriser
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "http://172.22.0.2:3000"
+    "http://172.22.0.2:3000",
 ]
 
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:3000",
-#     "http://172.22.0.2:3000"
-# ]
 
 # Par défaut, APPEND_SLASH est défini sur True, ce qui signifie que Django ajoutera
 # automatiquement une barre oblique à la fin des URL qui n'en ont pas lors de la redirection.
@@ -166,27 +164,21 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
-    
     "ALGORITHM": "HS256",
-
     "VERFICATION_KEY": None,
     "AUDIENCE": None,
     "ISSUER": None,
     "JWK_URL": None,
     "LEEWAY": 0,
-
     "AUTH_HEADER_TYPES": ("Bearer",),
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
     "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
-
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
-
     "JTI_CLAIM": "jti",
-
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
     "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
@@ -203,6 +195,5 @@ EMAIL_PORT = os.environ.get("EMAIL_PORT")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = "info@planner.com"
-DOMAIN = os.environ.get("DOMAIN") # domaine front react "http://localhost:3000"
+DOMAIN = os.environ.get("DOMAIN")  # domaine front react "http://localhost:3000"
 SITE_NAME = "Planner"
-

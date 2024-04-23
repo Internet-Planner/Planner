@@ -62,7 +62,7 @@ class PasswordResetSerializer(serializers.Serializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'is_single_event', 'recurrence_rules', 'date_start', 'date_end', 'time_start', 'time_end', 'is_supprime']
+        fields = ['id', 'title', 'description', 'is_single_event', 'recurrence_rules', 'date_start', 'date_end', 'time_start', 'time_end']
 
 class CreateEventSerializer(serializers.ModelSerializer):
     class Meta:

@@ -82,10 +82,10 @@ class UserAdmin(admin.ModelAdmin):
         ),
     )
 
-@receiver(post_save, sender=User)
-def create_user_planning(sender, instance, created, **kwargs):
-    if created:
-        Planning.objects.create(user=instance)
+# @receiver(post_save, sender=User)
+# def create_user_planning(sender, instance, created, **kwargs):
+#     if created and not hasattr(instance, 'planning'):
+#         Planning.objects.create(user=instance)
 
 
 class PlanningAdmin(admin.ModelAdmin):
