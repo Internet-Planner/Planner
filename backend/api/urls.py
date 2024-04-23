@@ -13,6 +13,7 @@ urlpatterns = [
     path("activate/<uidb64>/<token>/", views.activate, name="activate_account"),
     path("forgot-password/", views.forgotPassword, name="forgot_password"),
     path("reset-password/<uidb64>/<token>/", views.resetPassword, name="reset_password"),
+    path('update-avatar/', views.updateAvatar, name='update_avatar'),
 
     path("events/", views.getEvents, name="events"),
     path("events/create/", views.createEvent, name="create_event"),

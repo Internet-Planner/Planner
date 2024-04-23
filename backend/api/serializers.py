@@ -74,3 +74,17 @@ class CreateEventSerializer(serializers.ModelSerializer):
         planning = user.planning
         validated_data['planning'] = planning
         return Event.objects.create(**validated_data)
+    
+class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'avatar']  # inclure 'avatar' si vous souhaitez le retourner aussi
+
+    def update(self, user, validated_data):
+        avatar = validated_data.get('avatar', None)
+        if avatar:
+            user.avatar = avatar
+            user.save()
+        return user

@@ -210,3 +210,17 @@ def createEvent(request):
         serializer.save()  
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def updateAvatar(request):
+    User = get_user_model()
+    user = request.user  # Récupère l'utilisateur actuellement connecté
+    avatar = request.data.get('avatar')  # Obtient le chemin de l'avatar depuis les données POST
+
+    if avatar:
+        user.avatar = avatar
+        user.save()
+        return Response({"message": "Avatar updated successfully"}, status=status.HTTP_200_OK)
+    else:
+        return Response({"message": "No avatar provided"}, status=status.HTTP_400_BAD_REQUEST)
